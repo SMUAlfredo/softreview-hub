@@ -53,15 +53,17 @@ curl -i http://127.0.0.1:5000/health
 | Method and path | Expected result | Status |
 | --- | --- | --- |
 | `GET /health` | HTTP 200 with `{"success":true,"data":{"status":"ok"}}`, without a MySQL connection | Implemented |
-| `GET /api/tables` | List of the seven tables | Pending |
-| `GET /api/tables/<name>` | Contents of an allowed table | Pending |
+| `GET /api/tables` | Array of the seven canonical table names | Implemented |
+| `GET /api/tables/<name>` | Array of rows from an allowed table | Implemented |
 | `GET /api/software` | Software sorted by ID, with brand and product type details | Implemented |
-| `GET /api/criteria` | Evaluation criteria | Pending |
+| `GET /api/criteria` | Array of criterion IDs and canonical names | Implemented |
 | `POST /api/evaluations` | One report and its four scores in a single transaction | Pending |
 | `GET /api/rankings?n=5&order=best` | The five highest-ranked systems | Pending |
 | `GET /api/rankings?n=5&order=worst` | The five lowest-ranked systems | Pending |
 
-Successful responses use `{"success":true,"data":{...}}`. Errors use `{"success":false,"error":{"code":"...","message":"..."}}`.
+Successful responses use `{"success":true,"data":...}`. Errors use `{"success":false,"error":{"code":"...","message":"..."}}`.
+
+Use the exact table name returned by `GET /api/tables`, such as `GET /api/tables/Brand`. An unknown name returns 404 with code `unknown_table`. The criteria endpoint returns `criterion_id` and `criterion_name` for `friendliness`, `price`, `features`, and `accuracy` in that order.
 
 `GET /api/software` returns an array in `data`. A row from the development fixture looks like this.
 
@@ -97,7 +99,7 @@ The design uses InnoDB and foreign keys. Brand, product type, and criterion name
 
 The scripts for Tasks 3b and 4 are submitted separately. Local copies of `create_tables.sql`, `create_db.sh`, and `data2mongo2sql.sh` are in the course project folder outside the clone. The reviewed DDL leaves database selection to the client. The scripts generate database creation and selection statements from the supplied name. The reviewed copy of `data2mongo2sql.sh` ends after table creation.
 
-Use `sql/create_tables.sql` to install the course schema in an empty, explicitly selected database. Use `sql/test_data.sql` in a fresh isolated development database. It contains fictitious records.
+Use `sql/create_tables.sql` to install the course schema in an empty, explicitly selected database. Run `sql/seed_criteria.sql` to add missing criteria while retaining existing IDs. Use `sql/test_data.sql` in a fresh isolated development database for fictitious records.
 
 For development, use a separate local database such as `softreview_dev` with a development account and select it with `DB_NAME`. On the server, set `DB_NAME=u07` and use the assigned account. Before running SQL or scripts, confirm the target database and review any `CREATE DATABASE`, `USE`, and `DROP` statements.
 

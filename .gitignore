@@ -13,10 +13,14 @@ __pycache__/
 *.ppk
 id_rsa
 id_ed25519
+id_ecdsa
+id_dsa
 
 # Course data and dumps
 project.json
 data/private/
+data/raw/
 dumps/
 *.dump
+*.dump.sql
 *.sql.gz

@@ -55,13 +55,19 @@ curl -i http://127.0.0.1:5000/health
 | `GET /health` | HTTP 200 with `{"success":true,"data":{"status":"ok"}}`, without a MySQL connection | Implemented |
 | `GET /api/tables` | List of the seven tables | Pending |
 | `GET /api/tables/<name>` | Contents of an allowed table | Pending |
-| `GET /api/software` | Software available for evaluation | Pending |
+| `GET /api/software` | Software sorted by ID, with brand and product type details | Implemented |
 | `GET /api/criteria` | Evaluation criteria | Pending |
 | `POST /api/evaluations` | One report and its four scores in a single transaction | Pending |
 | `GET /api/rankings?n=5&order=best` | The five highest-ranked systems | Pending |
 | `GET /api/rankings?n=5&order=worst` | The five lowest-ranked systems | Pending |
 
 Successful responses use `{"success":true,"data":{...}}`. Errors use `{"success":false,"error":{"code":"...","message":"..."}}`.
+
+`GET /api/software` returns an array in `data`. A row from the development fixture looks like this.
+
+```json
+{"software_id":1,"brand_id":1,"brand_name":"Atlas","product_type_id":1,"type_name":"Editor"}
+```
 
 Use the agreed request body to submit an evaluation.
 
@@ -91,7 +97,9 @@ The design uses InnoDB and foreign keys. Brand, product type, and criterion name
 
 The scripts for Tasks 3b and 4 are submitted separately. Local copies of `create_tables.sql`, `create_db.sh`, and `data2mongo2sql.sh` are in the course project folder outside the clone. The reviewed DDL leaves database selection to the client. The scripts generate database creation and selection statements from the supplied name. The reviewed copy of `data2mongo2sql.sh` ends after table creation.
 
-For development, use a separate local database such as `softreview_dev` with a development account. Once MySQL support is added to the backend, select that database with `DB_NAME` in the local environment. On the server, set `DB_NAME=u07` and use the assigned account. Before running SQL or scripts, confirm the target database and review any `CREATE DATABASE`, `USE`, and `DROP` statements.
+Use `sql/create_tables.sql` to install the course schema in an empty, explicitly selected database. Use `sql/test_data.sql` in a fresh isolated development database. It contains fictitious records.
+
+For development, use a separate local database such as `softreview_dev` with a development account and select it with `DB_NAME`. On the server, set `DB_NAME=u07` and use the assigned account. Before running SQL or scripts, confirm the target database and review any `CREATE DATABASE`, `USE`, and `DROP` statements.
 
 ## Workflow and deliverables
 

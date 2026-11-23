@@ -135,3 +135,30 @@ class MySQLTests(unittest.TestCase):
         self.assertEqual(response.get_json()["error"]["code"], "database_error")
         self.assertNotIn("controlled test failure", response.get_data(as_text=True))
         self.assertEqual(evaluation_counts(), before)
+
+    def rankings(self, query=""):
+        response = self.client.get(f"/api/rankings{query}")
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertTrue(payload["success"])
+        return [
+            (row["software_id"], row["average_score"], row["evaluation_count"])
+            for row in payload["data"]
+        ]
+
+    def test_ranking_defaults_and_best_order_include_stable_tie(self):
+        expected = [(1, 8.0, 2), (3, 8.0, 1), (2, 5.0, 1)]
+        self.assertEqual(self.rankings(), expected)
+        self.assertEqual(self.rankings("?n=5&order=best"), expected)
+
+    def test_worst_ranking_and_limit(self):
+        self.assertEqual(self.rankings("?n=5&order=worst"), [(2, 5.0, 1), (1, 8.0, 2), (3, 8.0, 1)])
+        self.assertEqual(self.rankings("?n=1&order=worst"), [(2, 5.0, 1)])
+
+    def test_ranking_filters_product_type_and_uses_requested_criterion(self):
+        self.assertEqual(
+            self.rankings("?n=5&order=best&criterion=price&product_type_id=1"),
+            [(2, 9.0, 1), (1, 5.0, 2)],
+        )
+        self.assertEqual(self.rankings("?product_type_id=2"), [(3, 8.0, 1)])
+        self.assertEqual(self.rankings("?product_type_id=99999"), [])

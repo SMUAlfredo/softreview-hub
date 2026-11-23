@@ -58,8 +58,8 @@ curl -i http://127.0.0.1:5000/health
 | `GET /api/software` | Software sorted by ID, with brand and product type details | Implemented |
 | `GET /api/criteria` | Array of criterion IDs and canonical names | Implemented |
 | `POST /api/evaluations` | HTTP 201 for one report and its four scores in a single transaction | Implemented |
-| `GET /api/rankings?n=5&order=best` | The five highest-ranked systems | Pending |
-| `GET /api/rankings?n=5&order=worst` | The five lowest-ranked systems | Pending |
+| `GET /api/rankings?n=5&order=best` | Up to five highest-ranked systems | Implemented |
+| `GET /api/rankings?n=5&order=worst` | Up to five lowest-ranked systems | Implemented |
 
 Successful responses use `{"success":true,"data":...}`. Errors use `{"success":false,"error":{"code":"...","message":"..."}}`.
 
@@ -79,7 +79,9 @@ Use the agreed request body to submit an evaluation.
 
 The backend requires an existing software ID and four integer scores from 1 to 10. It creates one anonymous evaluator per submission and rolls back the evaluator, report, and scores together if a write fails. A successful submission returns HTTP 201 with `{"success":true,"data":{"report_id":1,"software_id":1}}`. Invalid input returns 400 and an unknown software ID returns 404.
 
-Rankings use the average score for the selected criterion. The frontend and backend teams still need to agree on the names and default values of the additional parameters for selecting a criterion and filtering by product type.
+Rankings use the average score for the selected criterion. The query parameters are `n` (default `5`), `order` (`best` by default, or `worst`), `criterion` (`friendliness` by default, or `price`, `features`, or `accuracy`), and optional `product_type_id` (all types by default). Both numeric parameters accept positive MySQL INT values. Invalid parameters return 400. An unknown product type returns an empty array.
+
+Systems need at least one score for the chosen criterion. Ties sort by ascending `software_id` in both directions. Rows include the software catalog fields plus numeric `average_score` and `evaluation_count`. For example, `GET /api/rankings?n=2&order=best&criterion=price&product_type_id=1` returns Cedar (9.0) followed by Atlas (5.0) with the development fixture.
 
 ## Schema and data
 

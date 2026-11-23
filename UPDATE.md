@@ -2,6 +2,12 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-23 · Software catalog on MySQL
+
+- Reused the seven-table course DDL in `sql/create_tables.sql`, added a fictitious catalog in `sql/test_data.sql`, and implemented `GET /api/software` with controlled JSON errors in `app.py`.
+- Loaded the DDL and fixture in the isolated Windows MySQL 8.0.36 database. All nine tests passed with MySQL enabled. A request over HTTP to Flask returned 200 and the four expected software rows.
+- Next, expose the table allowlist and the four criteria.
+
 ## 2026-11-23 · MySQL connection and transaction handling
 
 - Added `database.py`, MySQL Connector/Python, environment settings, and cursor and connection cleanup for reads and writes.

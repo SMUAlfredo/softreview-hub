@@ -2,6 +2,12 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-23 · Flask environment with uv
+
+- Set up `pyproject.toml` and `uv.lock` with `uv add flask --python 3.12`. Added `.gitignore`, `.env.example`, and documentation for the planned MySQL environment variables in `README.md`.
+- On Windows, `uv sync --locked --python 3.12` completed successfully. `uv run --locked python --version` and `uv run --locked flask --version` confirmed Python 3.12.16, Flask 3.1.3, and Werkzeug 3.1.9.
+- `git check-ignore` confirmed that `.env`, `.env.local`, `.venv/`, `project.json`, and `dumps/local.sql` are ignored and that `.env.example` can be tracked.
+
 ## 2026-11-23 · Initial documentation
 
 - Documented the scope, team workflow, API contract, and repository rules in `AGENTS.md`, `SECURITY.md`, `README.md`, and this changelog.

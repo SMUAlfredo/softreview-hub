@@ -2,6 +2,12 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-23 · Windows verification and Linux handoff
+
+- Locked the Linux Gunicorn dependency and added repeatable Windows, archive transfer, and university Linux checks to `README.md`.
+- On Windows, `uv sync --locked --python 3.12` succeeded. `uv run --locked python -m unittest discover -s tests -v` passed 11 isolated tests with nine MySQL tests skipped. With isolated MySQL 8.0.36 enabled, all 20 tests passed. A fresh schema load produced 16 fictitious scores.
+- Started Flask using the README command and verified HTTP 200 for eight read requests covering all read routes and ranking options, and HTTP 201 for a fictitious POST. The README shell examples passed syntax checks, the MySQL `SOURCE` sequence produced the expected fixture, and the staged Git archive contained exactly the 16 tracked files. Gunicorn and the `u07` schema still need verification from the user's SSH terminal.
+
 ## 2026-11-23 · Criterion rankings
 
 - Added `GET /api/rankings` with validated options, parameterized filters, average scores, and a stable software ID tie-break. Added fictitious evaluations in `sql/test_data.sql` and documented the defaults and filter in `README.md`.

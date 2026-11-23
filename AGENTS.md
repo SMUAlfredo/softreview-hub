@@ -1,11 +1,13 @@
 # Codex instructions for SoftReview Hub
 
-At the start of each session, read `SECURITY.md`, the latest entry in `UPDATE.md`, and `README.md`, in that order. Then review `git status --short --branch`, the recent commits, `pyproject.toml`, and `uv.lock`. For the task at hand, review any relevant code, SQL, and tests. Respect the team's changes and commits.
+Start with this file and the latest entries in `UPDATE.md`. Use the changelog to find completed work, verification results, pending steps, and relevant files. Compare it with `git status --short --branch` and newer commits, then consult `SECURITY.md` and the relevant sections of the README, course specification, code, SQL, and tests. Review `pyproject.toml` and `uv.lock` for Python changes. After an interruption, check the working tree, local commits, and remote branch before repeating work.
 
 - Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
-- Make small changes, use clear names, and keep Flask routes simple. Reuse the existing structure.
+- Make the smallest change that meets the requirement. Reuse existing logic, use clear names, give each function one responsibility, and add dependencies for current needs.
+- Remove unused imports, duplicate or unreachable code, and temporary files from the current task. Before deleting a function, dependency, or file, check Flask entry points, scripts, tests, configuration, and README commands for references. Preserve course submission scripts and teammates' work.
+- Search for the files and symbols relevant to the task. Run the affected checks after each increment and the relevant suite at the end. Write documentation, comments, and commit messages in English.
 - Validate inputs in Flask. Parameterize query values and use allowlists for SQL identifiers and sort options. Group related writes in a transaction.
-- Preserve the API contract agreed with the frontend team. Confirm how anonymous evaluator IDs are assigned before implementing the POST, and agree on any new ranking parameters before adding them.
-- Create one local commit per logical change. Verify the change, add its entry to `UPDATE.md` in the same commit, and review the staged diff before committing. Include only the files related to the change and preserve the existing history and work. Push only when the user asks.
+- Preserve the API contract agreed with the frontend team. Document decisions for open details with examples and keep the agreed POST fields and ranking URLs compatible.
+- Make one commit per verified increment. Record the change, files, actual checks, and any remaining work in `UPDATE.md`. Stage only files from the increment and review the staged names and diff for unrelated work and sensitive content. When the user authorizes pushes, push each commit to the assigned branch and verify the remote accepted it before starting the next increment. Preserve existing history and resolve push failures without force pushing or destructive resets.
 
-The team uses `main` as the stable branch, `frontend` for UI development, and `integration` to bring the components together and test them.
+The team uses `main` as the stable branch, `backend` for the Flask API, `frontend` for UI development, and `integration` to bring the components together and test them.

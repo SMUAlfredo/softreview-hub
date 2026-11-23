@@ -2,6 +2,12 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-23 · MySQL connection and transaction handling
+
+- Added `database.py`, MySQL Connector/Python, environment settings, and cursor and connection cleanup for reads and writes.
+- Windows passed `uv sync --locked --python 3.12` and all four tests in `test_database.py`. A connector query confirmed access to the isolated `softreview_test` schema on MySQL 8.0.36.
+- Next, load the course schema and fictitious data, then verify `GET /api/software`.
+
 ## 2026-11-23 · Backend workflow and privacy rules
 
 - Updated `AGENTS.md`, `SECURITY.md`, and `.gitignore` for incremental backend work and protection of local credentials, dumps, and raw data.

@@ -18,9 +18,22 @@ id_dsa
 
 # Course data and dumps
 project.json
+project(*).json
+clean_project.json
+clean_project.jsonl
+mongo_export.jsonl
+inserts.sql
+scripts_*.zip
+softreview-*.tar.gz
+softreview_task4_*.zip
+*transfer*.zip
 data/private/
 data/raw/
 dumps/
 *.dump
 *.dump.sql
 *.sql.gz
+
+# Private team notes
+docs/private/
+softreview_team_integration.pdf

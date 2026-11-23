@@ -2,6 +2,48 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-23 · Windows verification and Linux handoff
+
+- Locked the Linux Gunicorn dependency and added repeatable Windows, archive transfer, and university Linux checks to `README.md`.
+- On Windows, `uv sync --locked --python 3.12` succeeded. `uv run --locked python -m unittest discover -s tests -v` passed 11 isolated tests with nine MySQL tests skipped. With isolated MySQL 8.0.36 enabled, all 20 tests passed. A fresh schema load produced 16 fictitious scores.
+- Started Flask using the README command and verified HTTP 200 for eight read requests covering all read routes and ranking options, and HTTP 201 for a fictitious POST. The README shell examples passed syntax checks, the MySQL `SOURCE` sequence produced the expected fixture, and the staged Git archive contained exactly the 16 tracked files. Gunicorn and the `u07` schema still need verification from the user's SSH terminal.
+
+## 2026-11-23 · Criterion rankings
+
+- Added `GET /api/rankings` with validated options, parameterized filters, average scores, and a stable software ID tie-break. Added fictitious evaluations in `sql/test_data.sql` and documented the defaults and filter in `README.md`.
+- All 20 tests passed with Windows MySQL enabled. Fixtures verified both shared URLs, the default criterion, known averages, a tie, a one-row limit, and product type filtering.
+- Next, verify the Windows startup command and prepare the Linux handoff.
+
+## 2026-11-23 · Transactional evaluation submission
+
+- Implemented `POST /api/evaluations` in `app.py` using the agreed payload and one anonymous evaluator per submission. Documented the 201 response and validation errors in `README.md`.
+- All 16 tests passed with Windows MySQL enabled. A valid submission added one evaluator, one report, and four verified scores. Invalid and unknown-software requests left counts unchanged. A temporary development trigger forced a failure during score insertion and all counts stayed unchanged after rollback.
+- Next, implement rankings and verify both sort orders and the product type filter.
+
+## 2026-11-23 · Table browsing and criteria
+
+- Added the seven-table allowlist, explicit table projections, the criteria endpoint, and `sql/seed_criteria.sql`. Recorded the read contracts in `README.md`.
+- Applied the criteria script twice in isolated Windows MySQL. All 12 tests passed with MySQL enabled, including reads of every allowed table, rejection of an unknown table before connecting, and the four canonical criteria with their database IDs.
+- Next, implement and verify the evaluation transaction.
+
+## 2026-11-23 · Software catalog on MySQL
+
+- Reused the seven-table course DDL in `sql/create_tables.sql`, added a fictitious catalog in `sql/test_data.sql`, and implemented `GET /api/software` with controlled JSON errors in `app.py`.
+- Loaded the DDL and fixture in the isolated Windows MySQL 8.0.36 database. All nine tests passed with MySQL enabled. A request over HTTP to Flask returned 200 and the four expected software rows.
+- Next, expose the table allowlist and the four criteria.
+
+## 2026-11-23 · MySQL connection and transaction handling
+
+- Added `database.py`, MySQL Connector/Python, environment settings, and cursor and connection cleanup for reads and writes.
+- Windows passed `uv sync --locked --python 3.12` and all four tests in `test_database.py`. A connector query confirmed access to the isolated `softreview_test` schema on MySQL 8.0.36.
+- Next, load the course schema and fictitious data, then verify `GET /api/software`.
+
+## 2026-11-23 · Backend workflow and privacy rules
+
+- Updated `AGENTS.md`, `SECURITY.md`, and `.gitignore` for incremental backend work and protection of local credentials, dumps, and raw data.
+- Verified that the backend branch starts from the fetched `origin/main`. Checked representative paths with `git check-ignore` and confirmed `git ls-files --cached --ignored --exclude-standard` found no tracked ignored files. `.env.example` remains trackable.
+- Next, connect Flask to an isolated Windows MySQL database and verify the software endpoint.
+
 ## 2026-11-23 · Health endpoint verified over HTTP
 
 - Implemented `GET /health` in `app.py` and marked it as available in `README.md`. The route works without a MySQL connection.

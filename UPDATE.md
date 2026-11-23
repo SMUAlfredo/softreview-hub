@@ -2,6 +2,12 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-23 · Table browsing and criteria
+
+- Added the seven-table allowlist, explicit table projections, the criteria endpoint, and `sql/seed_criteria.sql`. Recorded the read contracts in `README.md`.
+- Applied the criteria script twice in isolated Windows MySQL. All 12 tests passed with MySQL enabled, including reads of every allowed table, rejection of an unknown table before connecting, and the four canonical criteria with their database IDs.
+- Next, implement and verify the evaluation transaction.
+
 ## 2026-11-23 · Software catalog on MySQL
 
 - Reused the seven-table course DDL in `sql/create_tables.sql`, added a fictitious catalog in `sql/test_data.sql`, and implemented `GET /api/software` with controlled JSON errors in `app.py`.

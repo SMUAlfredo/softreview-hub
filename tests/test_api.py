@@ -36,3 +36,16 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 405)
         self.assertIn("GET", response.headers["Allow"])
         self.assertEqual(response.get_json()["error"]["code"], "method_not_allowed")
+
+    @patch("app.database_cursor")
+    def test_tables_list_and_unknown_table_do_not_connect(self, cursor):
+        response = self.client.get("/api/tables")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {"success": True, "data": [
+            "Brand", "ProductType", "SoftwareSystem", "Evaluator", "EvaluationReport",
+            "ScoreCriterion", "EvaluationScore",
+        ]})
+        response = self.client.get("/api/tables/not_a_project_table")
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.get_json()["error"]["code"], "unknown_table")
+        cursor.assert_not_called()

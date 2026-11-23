@@ -73,3 +73,15 @@ class ApiTests(unittest.TestCase):
         response = self.client.post("/api/evaluations", data="{", content_type="application/json")
         self.assertEqual(response.status_code, 400)
         cursor.assert_not_called()
+
+    @patch("app.database_cursor")
+    def test_invalid_rankings_are_rejected_before_connecting(self, cursor):
+        for query in (
+            {"n": "0"}, {"n": "1.5"}, {"n": "99999999999"}, {"order": "DESC"},
+            {"criterion": "brand_name"}, {"product_type_id": "-1"}, {"product_type_id": ""},
+        ):
+            with self.subTest(query=query):
+                response = self.client.get("/api/rankings", query_string=query)
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.get_json()["error"]["code"], "invalid_ranking")
+        cursor.assert_not_called()

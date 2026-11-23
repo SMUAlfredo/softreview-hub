@@ -16,6 +16,8 @@ TABLE_QUERIES = {
     "EvaluationScore": "SELECT report_id, criterion_id, score_value FROM EvaluationScore ORDER BY report_id, criterion_id",
 }
 CRITERIA = ("friendliness", "price", "features", "accuracy")
+RANKING_DIRECTIONS = {"best": "DESC", "worst": "ASC"}
+MYSQL_INT_MAX = 2_147_483_647
 
 
 class ApiError(Exception):
@@ -132,7 +134,7 @@ def validate_evaluation(payload):
         raise ApiError("invalid_evaluation", "Send a JSON object with the software ID and four scores.", 400)
 
     software_id = payload.get("software_id")
-    if type(software_id) is not int or not 1 <= software_id <= 2_147_483_647:
+    if type(software_id) is not int or not 1 <= software_id <= MYSQL_INT_MAX:
         raise ApiError("invalid_evaluation", "software_id must be a positive integer ID.", 400)
 
     for criterion in CRITERIA:
@@ -169,3 +171,55 @@ def create_evaluation():
         )
 
     return jsonify(success=True, data={"report_id": report_id, "software_id": software_id}), 201
+
+
+def ranking_integer(name, value):
+    if len(value) <= 10 and value.isascii() and value.isdecimal():
+        number = int(value)
+        if 1 <= number <= MYSQL_INT_MAX:
+            return number
+    raise ApiError("invalid_ranking", f"{name} must be an integer from 1 to {MYSQL_INT_MAX}.", 400)
+
+
+@app.get("/api/rankings")
+def rankings():
+    limit = ranking_integer("n", request.args.get("n", "5"))
+    direction = RANKING_DIRECTIONS.get(request.args.get("order", "best"))
+    if direction is None:
+        raise ApiError("invalid_ranking", "order must be best or worst.", 400)
+
+    criterion = request.args.get("criterion", "friendliness")
+    if criterion not in CRITERIA:
+        raise ApiError("invalid_ranking", "criterion must be friendliness, price, features, or accuracy.", 400)
+
+    product_type = request.args.get("product_type_id")
+    product_type_filter = ""
+    filter_values = ()
+    if product_type is not None:
+        product_type_filter = "AND s.product_type_id = %s"
+        filter_values = (ranking_integer("product_type_id", product_type),)
+
+    with database_cursor() as cursor:
+        criterion_id = load_criteria(cursor)[criterion]["criterion_id"]
+        cursor.execute(
+            f"""
+            SELECT s.software_id, s.brand_id, b.brand_name, s.product_type_id, p.type_name,
+                   AVG(CAST(es.score_value AS DECIMAL(14, 8))) AS average_score,
+                   COUNT(*) AS evaluation_count
+            FROM EvaluationScore AS es
+            JOIN EvaluationReport AS er ON er.report_id = es.report_id
+            JOIN SoftwareSystem AS s ON s.software_id = er.software_id
+            JOIN Brand AS b ON b.brand_id = s.brand_id
+            JOIN ProductType AS p ON p.product_type_id = s.product_type_id
+            WHERE es.criterion_id = %s {product_type_filter}
+            GROUP BY s.software_id, s.brand_id, b.brand_name, s.product_type_id, p.type_name
+            ORDER BY average_score {direction}, s.software_id ASC
+            LIMIT %s
+            """,
+            (criterion_id, *filter_values, limit),
+        )
+        rows = cursor.fetchall()
+
+    for row in rows:
+        row["average_score"] = float(row["average_score"])
+    return jsonify(success=True, data=rows)

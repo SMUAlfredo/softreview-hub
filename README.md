@@ -6,6 +6,8 @@ The backend uses Python 3.12 and Flask. The planned stack includes MySQL Connect
 
 ## Main files
 
+- `pyproject.toml` declares the project and its dependencies. `uv.lock` pins the versions uv installs.
+- `.env.example` lists the planned MySQL environment variables. `.gitignore` excludes the virtual environment, credentials, and local data.
 - `AGENTS.md` contains working instructions for Codex.
 - `SECURITY.md` covers credentials, data, and use of the university server.
 - `UPDATE.md` records changes, checks performed, and pending work.
@@ -14,7 +16,9 @@ The backend uses Python 3.12 and Flask. The planned stack includes MySQL Connect
 
 Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
-Install uv and run these commands from the root of the clone. The planned configuration uses `.env.example` as a template with placeholder values and `.env` as a local file ignored by Git.
+Install uv and run these commands from the root of the clone.
+
+For the future MySQL connection, copy `.env.example` to `.env` and set `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD` for your environment. Git ignores the local file. Flask currently starts without these variables.
 
 ### Windows PowerShell
 

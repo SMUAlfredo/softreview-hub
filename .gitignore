@@ -1,0 +1,22 @@
+# Python environment and generated files
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.ppk
+id_rsa
+id_ed25519
+
+# Course data and dumps
+project.json
+data/private/
+dumps/
+*.dump
+*.sql.gz

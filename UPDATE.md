@@ -2,6 +2,14 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-23 · University Linux backend verification
+
+- Recorded the team's manual SSH verification of backend commit `e31e10d0895a656f786417bbccc322be6195241a` in this entry and updated the Linux verification status in `README.md`.
+- Gunicorn started on the university Linux server. All eight HTTP read requests returned 200. MySQL contained 100 software systems, 4,738 evaluation reports, 18,952 scores, and four criteria.
+- The `price` ranking returned Hane, Kunze and O'Connell with 7.3333 for `best` and Schaden-Hoeger with 4.0 for `worst`, matching the dataset.
+- `POST /api/evaluations` returned 201. MySQL confirmed one new report and the four expected scores. The team removed the fictitious test records afterward.
+- The team loaded anonymized data directly into MySQL for this backend verification. Verification of the Task 4 MongoDB import workflow remains pending because MongoDB authentication failed.
+
 ## 2026-11-23 · Windows verification and Linux handoff
 
 - Locked the Linux Gunicorn dependency and added repeatable Windows, archive transfer, and university Linux checks to `README.md`.

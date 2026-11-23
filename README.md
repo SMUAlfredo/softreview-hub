@@ -71,6 +71,10 @@ uv run --locked flask --app app run --host 127.0.0.1 --port 5000
 
 ## University Linux verification
 
+The team manually verified backend commit `e31e10d0895a656f786417bbccc322be6195241a` over SSH on the university Linux server. Gunicorn started, all eight read requests returned HTTP 200, and the evaluation POST returned HTTP 201. MySQL confirmed the report and four scores, and the team removed the fictitious test records afterward.
+
+The team loaded anonymized data directly into MySQL for the backend test. Verification of the Task 4 MongoDB import workflow remains pending because MongoDB authentication failed. The full results are recorded in [UPDATE.md](UPDATE.md).
+
 Check out the exact tested revision after cloning the private repository, or transfer a Git archive from Windows when the server lacks GitHub access. `git archive` packages tracked files from the selected commit. Fill in the SSH login and host before transferring.
 
 ```powershell

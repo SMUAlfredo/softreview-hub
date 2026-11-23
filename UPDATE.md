@@ -2,11 +2,17 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-23 · Public repository documentation review
+
+- Simplified the README to cover local setup, tests, and the API contract. Moved the Linux verification runbook to `SECURITY.md` and kept course scope and verification results here.
+- Replaced university account identifiers in the current documentation with placeholders and expanded ignore rules for local course data and transfer archives.
+- Reviewed all 13 reachable commits and tracked files for common credential signatures and course data. Older revisions still include the assigned account identifier. No credential or raw dataset was identified by the checks.
+
 ## 2026-11-23 · University Linux backend verification
 
-- Recorded the team's manual SSH verification of backend commit `e31e10d0895a656f786417bbccc322be6195241a` in this entry and updated the Linux verification status in `README.md`.
+- Recorded the team's manual SSH verification of backend commit `e31e10d0895a656f786417bbccc322be6195241a` in this entry and documented the result.
 - Gunicorn started on the university Linux server. All eight HTTP read requests returned 200. MySQL contained 100 software systems, 4,738 evaluation reports, 18,952 scores, and four criteria.
-- The `price` ranking returned Hane, Kunze and O'Connell with 7.3333 for `best` and Schaden-Hoeger with 4.0 for `worst`, matching the dataset.
+- The best and worst `price` rankings matched the expected averages calculated from the dataset.
 - `POST /api/evaluations` returned 201. MySQL confirmed one new report and the four expected scores. The team removed the fictitious test records afterward.
 - The team loaded anonymized data directly into MySQL for this backend verification. Verification of the Task 4 MongoDB import workflow remains pending because MongoDB authentication failed.
 
@@ -14,7 +20,7 @@ The latest entries appear first. Always use uv for Python. Add dependencies with
 
 - Locked the Linux Gunicorn dependency and added repeatable Windows, archive transfer, and university Linux checks to `README.md`.
 - On Windows, `uv sync --locked --python 3.12` succeeded. `uv run --locked python -m unittest discover -s tests -v` passed 11 isolated tests with nine MySQL tests skipped. With isolated MySQL 8.0.36 enabled, all 20 tests passed. A fresh schema load produced 16 fictitious scores.
-- Started Flask using the README command and verified HTTP 200 for eight read requests covering all read routes and ranking options, and HTTP 201 for a fictitious POST. The README shell examples passed syntax checks, the MySQL `SOURCE` sequence produced the expected fixture, and the staged Git archive contained exactly the 16 tracked files. Gunicorn and the `u07` schema still need verification from the user's SSH terminal.
+- Started Flask using the README command and verified HTTP 200 for eight read requests covering all read routes and ranking options, and HTTP 201 for a fictitious POST. The README shell examples passed syntax checks, the MySQL `SOURCE` sequence produced the expected fixture, and the staged Git archive contained exactly the 16 tracked files. Gunicorn and the assigned MySQL schema still need verification from the user's SSH terminal.
 
 ## 2026-11-23 · Criterion rankings
 
@@ -70,7 +76,13 @@ The latest entries appear first. Always use uv for Python. Add dependencies with
 - Verified locally with `git status --short --branch`, `git remote -v`, and `git log -5 --oneline` that the clone was on `main`, with no working files or commits, and that `origin` pointed to `https://github.com/SMUAlfredo/softreview-hub.git`.
 - Reviewed `create_tables.sql`, `create_db.sh`, and `data2mongo2sql.sh` outside the clone. The DDL defines the seven tables without selecting a database. The scripts generate `CREATE DATABASE IF NOT EXISTS` and `USE` using the supplied database name. The reviewed copy of `data2mongo2sql.sh` ends after table creation. The full import workflow still needed verification.
 
+## Course project scope
+
+- Task 4 imports the software records through MongoDB and MySQL. The import replaces evaluator email addresses with anonymous IDs and excludes profile records. The course source data stays outside Git. The Task 3b and Task 4 submission scripts are maintained separately from the application.
+- Task 5 demonstrates table browsing, transactional evaluation submission, and ranking by criterion.
+- Task 6 includes a presentation and a short report on the application structure. Team responsibilities cover the backend, frontend, and integration and reporting.
+
 ## Before this stage · Infrastructure checks reported by the team
 
-- The team tested Python 3.12.3, uv, Flask, MySQL Connector/Python, and Gunicorn on the Linux server. They confirmed HTTP access through an SSH tunnel and local MySQL access using the `u07` account and its permissions on the `u07` database. The existing tables were preserved.
+- The team tested Python 3.12.3, uv, Flask, MySQL Connector/Python, and Gunicorn on the Linux server. They confirmed HTTP access through an SSH tunnel and local MySQL access using the assigned MySQL account and database. The existing tables were preserved.
 - Those checks covered the infrastructure. Implementing the application and verifying its first route over HTTP were still pending.

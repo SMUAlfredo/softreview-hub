@@ -2,6 +2,12 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-23 · Transactional evaluation submission
+
+- Implemented `POST /api/evaluations` in `app.py` using the agreed payload and one anonymous evaluator per submission. Documented the 201 response and validation errors in `README.md`.
+- All 16 tests passed with Windows MySQL enabled. A valid submission added one evaluator, one report, and four verified scores. Invalid and unknown-software requests left counts unchanged. A temporary development trigger forced a failure during score insertion and all counts stayed unchanged after rollback.
+- Next, implement rankings and verify both sort orders and the product type filter.
+
 ## 2026-11-23 · Table browsing and criteria
 
 - Added the seven-table allowlist, explicit table projections, the criteria endpoint, and `sql/seed_criteria.sql`. Recorded the read contracts in `README.md`.

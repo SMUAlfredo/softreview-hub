@@ -6,6 +6,7 @@ The backend uses Python 3.12 and Flask. The planned stack includes MySQL Connect
 
 ## Main files
 
+- `app.py` creates the Flask application and exposes `GET /health`.
 - `pyproject.toml` declares the project and its dependencies. `uv.lock` pins the versions uv installs.
 - `.env.example` lists the planned MySQL environment variables. `.gitignore` excludes the virtual environment, credentials, and local data.
 - `AGENTS.md` contains working instructions for Codex.
@@ -50,7 +51,7 @@ curl -i http://127.0.0.1:5000/health
 
 | Method and path | Expected result | Status |
 | --- | --- | --- |
-| `GET /health` | HTTP 200 with JSON, without a MySQL connection | Planned for this stage |
+| `GET /health` | HTTP 200 with `{"success":true,"data":{"status":"ok"}}`, without a MySQL connection | Implemented |
 | `GET /api/tables` | List of the seven tables | Pending |
 | `GET /api/tables/<name>` | Contents of an allowed table | Pending |
 | `GET /api/software` | Software available for evaluation | Pending |

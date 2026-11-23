@@ -2,6 +2,12 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-23 · Health endpoint verified over HTTP
+
+- Implemented `GET /health` in `app.py` and marked it as available in `README.md`. The route works without a MySQL connection.
+- In Windows PowerShell, started the app with `uv run --locked flask --app app run --host 127.0.0.1 --port 5000` with debug mode disabled. From a second terminal, `curl.exe --silent --show-error --max-time 5 -i http://127.0.0.1:5000/health` returned `HTTP/1.1 200 OK`, `Content-Type: application/json`, and `{"data":{"status":"ok"},"success":true}`. Verified the status code and the JSON response body.
+- The tables, fictitious test data, remaining endpoints, and Linux deployment are pending.
+
 ## 2026-11-23 · Flask environment with uv
 
 - Set up `pyproject.toml` and `uv.lock` with `uv add flask --python 3.12`. Added `.gitignore`, `.env.example`, and documentation for the planned MySQL environment variables in `README.md`.

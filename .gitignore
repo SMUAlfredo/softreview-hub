@@ -26,10 +26,14 @@ inserts.sql
 scripts_*.zip
 softreview-*.tar.gz
 softreview_task4_*.zip
-task4*transfer.zip
+*transfer*.zip
 data/private/
 data/raw/
 dumps/
 *.dump
 *.dump.sql
 *.sql.gz
+
+# Private team notes
+docs/private/
+softreview_team_integration.pdf

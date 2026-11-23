@@ -8,7 +8,8 @@ The backend uses Python 3.12 and Flask. The planned stack includes MySQL Connect
 
 - `app.py` creates the Flask application and exposes `GET /health`.
 - `pyproject.toml` declares the project and its dependencies. `uv.lock` pins the versions uv installs.
-- `.env.example` lists the planned MySQL environment variables. `.gitignore` excludes the virtual environment, credentials, and local data.
+- `database.py` opens MySQL connections and handles cursor cleanup and write transactions.
+- `.env.example` lists the MySQL environment variables. `.gitignore` excludes the virtual environment, credentials, and local data.
 - `AGENTS.md` contains working instructions for Codex.
 - `SECURITY.md` covers credentials, data, and use of the university server.
 - `UPDATE.md` records changes, checks performed, and pending work.
@@ -19,7 +20,7 @@ Always use uv for Python. Add dependencies with `uv add`, reproduce the environm
 
 Install uv and run these commands from the root of the clone.
 
-For the future MySQL connection, copy `.env.example` to `.env` and set `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD` for your environment. Git ignores the local file. Flask currently starts without these variables.
+Set `DB_NAME`, `DB_USER`, and `DB_PASSWORD` in the process environment for database routes. TCP defaults to `DB_HOST=127.0.0.1` and `DB_PORT=3306`. Set `DB_UNIX_SOCKET` to use a local Unix socket instead. Use `.env.example` as a reference when setting environment variables. `/health` works without database settings.
 
 ### Windows PowerShell
 

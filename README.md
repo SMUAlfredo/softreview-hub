@@ -2,11 +2,11 @@
 
 Final project for Database (MCDA 5540, Fall 2026). SoftReview Hub lets users browse software data, submit evaluations, and compare systems.
 
-The backend uses Python 3.12 and Flask. The planned stack includes MySQL Connector/Python for database access and Gunicorn for serving the application on Linux. The frontend uses HTML, CSS, Bootstrap, and JavaScript.
+The backend uses Python 3.12, Flask, MySQL Connector/Python, and Gunicorn on Linux. The frontend uses HTML, CSS, Bootstrap, and JavaScript.
 
 ## Main files
 
-- `app.py` creates the Flask application and exposes `GET /health`.
+- `app.py` defines the Flask API routes and JSON responses.
 - `pyproject.toml` declares the project and its dependencies. `uv.lock` pins the versions uv installs.
 - `database.py` opens MySQL connections and handles cursor cleanup and write transactions.
 - `.env.example` lists the MySQL environment variables. `.gitignore` excludes the virtual environment, credentials, and local data.
@@ -35,18 +35,98 @@ Send the health request from a second PowerShell terminal.
 curl.exe -i http://127.0.0.1:5000/health
 ```
 
-### Linux
+To test the database flows, create a fresh `softreview_test` database on an isolated local MySQL 8 instance. From the clone root, use the local schema setup account and port.
 
-```bash
-uv sync --locked --python 3.12
+```powershell
+$setupUser = 'YOUR_LOCAL_SCHEMA_SETUP_USER'
+$mysqlPort = 3306
+mysql.exe --protocol=TCP -h 127.0.0.1 -P $mysqlPort -u $setupUser -p -e 'CREATE DATABASE softreview_test CHARACTER SET utf8mb4'
+mysql.exe --protocol=TCP -h 127.0.0.1 -P $mysqlPort -u $setupUser -p softreview_test
+```
+
+In the MySQL prompt, load the scripts in this order.
+
+```sql
+SOURCE sql/create_tables.sql;
+SOURCE sql/seed_criteria.sql;
+SOURCE sql/test_data.sql;
+exit
+```
+
+Set the backend account in PowerShell before starting Flask again. Adjust the port for the isolated instance. If MySQL CLI tools are outside `PATH`, use their full paths.
+
+```powershell
+$env:DB_HOST = '127.0.0.1'
+$env:DB_PORT = '3306'
+$env:DB_NAME = 'softreview_test'
+$env:DB_USER = 'YOUR_LOCAL_TEST_USER'
+$env:DB_PASSWORD = [Net.NetworkCredential]::new('', (Read-Host 'MySQL password' -AsSecureString)).Password
+$env:FLASK_DEBUG = '0'
 uv run --locked flask --app app run --host 127.0.0.1 --port 5000
 ```
 
-Send the health request from a second terminal.
+### Tests
+
+`uv run --locked python -m unittest discover -s tests -v` runs isolated tests and skips MySQL integration tests by default. With the fictitious fixture loaded, run the same command with `SOFTREVIEW_TEST_MYSQL=1` in the environment. In PowerShell, use `$env:SOFTREVIEW_TEST_MYSQL = '1'`. The integration suite requires the isolated `softreview_test` database. Use a local test account with SELECT, INSERT, DELETE, and TRIGGER privileges in that database. Use an isolated instance that permits the temporary rollback test trigger, for example with binary logging disabled.
+
+## University Linux verification
+
+Check out the exact tested revision after cloning the private repository, or transfer a Git archive from Windows when the server lacks GitHub access. `git archive` packages tracked files from the selected commit. Fill in the SSH login and host before transferring.
+
+```powershell
+$revision = (git rev-parse HEAD).Trim()
+$archive = Join-Path ([IO.Path]::GetTempPath()) "softreview-$revision.tar.gz"
+git archive --format=tar.gz --output=$archive $revision
+if ($LASTEXITCODE -ne 0) { throw 'git archive failed' }
+$sshTarget = 'YOUR_SSH_LOGIN@YOUR_UNIVERSITY_HOST'
+scp $archive "${sshTarget}:softreview-$revision.tar.gz"
+```
+
+On Linux, extract the archive into an assigned directory. If the server can access GitHub, clone the private repository and use `git checkout --detach "$revision"` with the same hash.
 
 ```bash
-curl -i http://127.0.0.1:5000/health
+revision=YOUR_TESTED_COMMIT
+release_dir="$HOME/softreview-$revision"
+mkdir -p "$release_dir"
+tar -xzf "$HOME/softreview-$revision.tar.gz" -C "$release_dir"
+cd "$release_dir"
 ```
+
+Run the following from the revision's root.
+
+```bash
+export DB_HOST=127.0.0.1 DB_PORT=3306 DB_NAME=u07 DB_USER=u07 FLASK_DEBUG=0
+mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p "$DB_NAME" -e 'SHOW TABLES'
+# If all seven application tables are absent and setup is authorized:
+# mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p "$DB_NAME" < sql/create_tables.sql
+# If criteria are missing and seeding is authorized:
+# mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p "$DB_NAME" < sql/seed_criteria.sql
+read -rsp 'MySQL password: ' DB_PASSWORD
+printf '\n'
+export DB_PASSWORD
+uv sync --locked --python 3.12
+uv run --locked gunicorn --bind 127.0.0.1:8000 app:app
+```
+
+Use the assigned MySQL connection. For a Unix socket, set `DB_UNIX_SOCKET` to its authorized path and use `mysql --protocol=SOCKET --socket="$DB_UNIX_SOCKET"` with the same user and database. If only some application tables exist, verify the existing definitions and coordinate the missing schema before applying DDL. Preserve existing tables and data. The fictitious fixture is for isolated development.
+
+Run these checks from a second SSH terminal or adapt the base URL to the local port of the agreed SSH tunnel.
+
+```bash
+base=http://127.0.0.1:8000
+for endpoint in /health /api/software /api/tables /api/tables/Brand /api/criteria \
+    '/api/rankings?n=5&order=best' '/api/rankings?n=5&order=worst' \
+    '/api/rankings?n=2&order=best&criterion=price&product_type_id=1'; do
+  curl -fsS "$base$endpoint"
+  printf '\n'
+done
+
+# Authorized test data only. Replace 1 with an approved software_id from /api/software.
+# curl -si "$base/api/evaluations" -H 'Content-Type: application/json' \
+#   --data '{"software_id":1,"friendliness":8,"price":7,"features":9,"accuracy":10}'
+```
+
+The read requests should return HTTP 200. The authorized POST should return HTTP 201. After stopping Gunicorn, clear the password from the shell with `unset DB_PASSWORD`.
 
 ## Frontend API contract
 
@@ -107,8 +187,8 @@ For development, use a separate local database such as `softreview_dev` with a d
 
 ## Workflow and deliverables
 
-The team develops locally in VS Code, integrates changes through the private GitHub repository, and deploys to the university's Linux server. `main` is the stable branch, `frontend` is for UI development, and `integration` is for integrating and testing components. Commits from this stage stay local until a push is requested.
+The team develops locally in VS Code, integrates changes through the private GitHub repository, and deploys to the university's Linux server. `main` is the stable branch, `backend` holds Flask API changes, `frontend` is for UI development, and `integration` is for integrating and testing components.
 
-On Linux, the plan is to serve the application with Gunicorn, disable debug mode, and access HTTP through the agreed SSH tunnel. `UPDATE.md` records the infrastructure checks reported by the team.
+Use Gunicorn on localhost with debug disabled and access HTTP through the agreed SSH tunnel. `UPDATE.md` records the reported infrastructure checks and the backend tests run on Windows.
 
 Task 5 demonstrates table browsing, transactional evaluation submission, and ranking by criterion. Task 6 includes a roughly 15-minute presentation with all three team members and a 2–4-page PDF report about the application structure and how its files connect. The work is divided across three roles covering the backend and README, the frontend, and integration, testing, and the report.

@@ -57,7 +57,7 @@ curl -i http://127.0.0.1:5000/health
 | `GET /api/tables/<name>` | Array of rows from an allowed table | Implemented |
 | `GET /api/software` | Software sorted by ID, with brand and product type details | Implemented |
 | `GET /api/criteria` | Array of criterion IDs and canonical names | Implemented |
-| `POST /api/evaluations` | One report and its four scores in a single transaction | Pending |
+| `POST /api/evaluations` | HTTP 201 for one report and its four scores in a single transaction | Implemented |
 | `GET /api/rankings?n=5&order=best` | The five highest-ranked systems | Pending |
 | `GET /api/rankings?n=5&order=worst` | The five lowest-ranked systems | Pending |
 
@@ -77,7 +77,7 @@ Use the agreed request body to submit an evaluation.
 {"software_id":1,"friendliness":8,"price":7,"features":9,"accuracy":10}
 ```
 
-The backend validates that the software exists and that the four scores are integers from 1 to 10. The server will assign the anonymous evaluator ID. Confirm how IDs will be assigned before implementing the write operation. If any insert fails, roll back the entire transaction.
+The backend requires an existing software ID and four integer scores from 1 to 10. It creates one anonymous evaluator per submission and rolls back the evaluator, report, and scores together if a write fails. A successful submission returns HTTP 201 with `{"success":true,"data":{"report_id":1,"software_id":1}}`. Invalid input returns 400 and an unknown software ID returns 404.
 
 Rankings use the average score for the selected criterion. The frontend and backend teams still need to agree on the names and default values of the additional parameters for selecting a criterion and filtering by product type.
 

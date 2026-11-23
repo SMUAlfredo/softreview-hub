@@ -49,3 +49,27 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.get_json()["error"]["code"], "unknown_table")
         cursor.assert_not_called()
+
+    @patch("app.database_cursor")
+    def test_invalid_evaluations_are_rejected_before_connecting(self, cursor):
+        valid = {"software_id": 1, "friendliness": 8, "price": 7, "features": 9, "accuracy": 10}
+        invalid = [
+            [],
+            {},
+            {**valid, "software_id": True},
+            {**valid, "software_id": 0},
+            {**valid, "software_id": 2_147_483_648},
+            {**valid, "friendliness": 0},
+            {**valid, "price": 11},
+            {**valid, "features": 7.0},
+            {**valid, "accuracy": "10"},
+            {**valid, "accuracy": True},
+        ]
+        for payload in invalid:
+            with self.subTest(payload=payload):
+                response = self.client.post("/api/evaluations", json=payload)
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.get_json()["error"]["code"], "invalid_evaluation")
+        response = self.client.post("/api/evaluations", data="{", content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        cursor.assert_not_called()

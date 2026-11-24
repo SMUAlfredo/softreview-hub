@@ -2,6 +2,12 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-24 · Flask modules by feature
+
+- Reduced `app.py` to application setup and the health check. Grouped public routes in Flask blueprints in `api/catalog.py`, `api/criteria.py`, `api/evaluations.py`, and `api/rankings.py`. Moved shared JSON error handlers to `api/errors.py` and kept their registration at the application level.
+- Simplified validation in the criteria and evaluation modules, moved the shared integer limit to `database.py`, and removed Gunicorn from `pyproject.toml` and `uv.lock` for local Flask operation. Updated `README.md` and the mock targets in `tests/test_api.py`.
+- `uv sync --offline --locked --python 3.12` succeeded. All 21 tests passed against an isolated local MySQL instance with fictitious data, including ranking and transaction rollback checks. The Flask CLI listed the expected routes. The CLI entry point also passed health and JSON 404 checks.
+
 ## 2026-11-24 · Local-only database connection
 
 - Fixed MySQL connections to `127.0.0.1` in `database.py` and retained `DB_PORT` for isolated local instances. Updated `.env.example`, `README.md`, and `SECURITY.md` for local operation.

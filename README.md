@@ -47,7 +47,8 @@ uv run --locked --env-file .env flask --app app run --host 127.0.0.1 --port 5000
 
 ## Project files
 
-- `app.py` defines the Flask routes and JSON responses.
+- `app.py` starts Flask, registers the route groups, and defines the health check.
+- `api/` groups routes by feature in `catalog.py`, `criteria.py`, `evaluations.py`, and `rankings.py`. `errors.py` handles JSON errors for the whole app.
 - `database.py` manages MySQL connections and transactions.
 - `sql/` contains the schema, criteria seed, and fictitious development data.
 - `tests/` contains the isolated and MySQL integration tests.

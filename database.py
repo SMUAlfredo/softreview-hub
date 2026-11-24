@@ -3,6 +3,8 @@ from contextlib import closing, contextmanager
 
 import mysql.connector
 
+MYSQL_INT_MAX = 2_147_483_647
+
 
 class DatabaseUnavailable(Exception):
     """The database connection could not be configured or opened."""

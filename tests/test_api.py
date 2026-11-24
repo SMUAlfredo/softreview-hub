@@ -22,7 +22,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.get_json()["error"]["code"], "database_unavailable")
 
-    @patch("app.database_cursor", side_effect=MySQLError("private connector detail"))
+    @patch("api.catalog.database_cursor", side_effect=MySQLError("private connector detail"))
     def test_software_redacts_database_errors(self, _cursor):
         with self.assertLogs(app.logger, level="ERROR") as logs:
             response = self.client.get("/api/software")
@@ -37,7 +37,7 @@ class ApiTests(unittest.TestCase):
         self.assertIn("GET", response.headers["Allow"])
         self.assertEqual(response.get_json()["error"]["code"], "method_not_allowed")
 
-    @patch("app.database_cursor")
+    @patch("api.catalog.database_cursor")
     def test_tables_list_and_unknown_table_do_not_connect(self, cursor):
         response = self.client.get("/api/tables")
         self.assertEqual(response.status_code, 200)
@@ -50,7 +50,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.get_json()["error"]["code"], "unknown_table")
         cursor.assert_not_called()
 
-    @patch("app.database_cursor")
+    @patch("api.evaluations.database_cursor")
     def test_invalid_evaluations_are_rejected_before_connecting(self, cursor):
         valid = {"software_id": 1, "friendliness": 8, "price": 7, "features": 9, "accuracy": 10}
         invalid = [
@@ -74,7 +74,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         cursor.assert_not_called()
 
-    @patch("app.database_cursor")
+    @patch("api.rankings.database_cursor")
     def test_invalid_rankings_are_rejected_before_connecting(self, cursor):
         for query in (
             {"n": "0"}, {"n": "1.5"}, {"n": "99999999999"}, {"order": "DESC"},

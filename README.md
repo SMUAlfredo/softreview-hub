@@ -4,46 +4,40 @@ SoftReview Hub is a Flask and MySQL API for browsing software data, submitting e
 
 ## Local development
 
-Install [uv](https://docs.astral.sh/uv/) and use it for Python dependencies and commands. A local MySQL 8 instance is required for database routes. Run the commands below from the root of the clone.
+Install [uv](https://docs.astral.sh/uv/) and have MySQL 8 running on your machine. Run the setup commands from the root of the clone. If the MySQL client is outside `PATH`, use its full path.
 
 The API connects to MySQL over TCP at `127.0.0.1`. Set `DB_NAME`, `DB_USER`, and `DB_PASSWORD` for database routes. The default port is `3306` and can be changed with `DB_PORT`.
 
-### Start the API
+### Prepare the database once
 
-```powershell
-uv sync --locked --python 3.12
-uv run --locked flask --app app run --host 127.0.0.1 --port 5000
+Use the account that can create a database on your local MySQL. Replace `3306` if your instance uses another port. Run the second command after the first succeeds.
+
+```sh
+mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u YOUR_LOCAL_SETUP_USER -p -e 'CREATE DATABASE softreview_dev CHARACTER SET utf8mb4'
+mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u YOUR_LOCAL_SETUP_USER -p -e 'SOURCE sql/setup_local.sql' softreview_dev
 ```
 
-### Set up local MySQL
-
-To test the database flows, create a fresh `softreview_test` database on an isolated local MySQL 8 instance. From the clone root, use the local schema setup account and port.
-
-```powershell
-$setupUser = 'YOUR_LOCAL_SCHEMA_SETUP_USER'
-$mysqlPort = 3306
-mysql.exe --protocol=TCP -h 127.0.0.1 -P $mysqlPort -u $setupUser -p -e 'CREATE DATABASE softreview_test CHARACTER SET utf8mb4'
-mysql.exe --protocol=TCP -h 127.0.0.1 -P $mysqlPort -u $setupUser -p softreview_test
-```
-
-In the MySQL prompt, load the scripts in this order.
+The setup creates the tables and loads the four evaluation criteria. If you need a separate app account, connect to your local MySQL with your setup account and run these statements with a local password of your choice.
 
 ```sql
-SOURCE sql/create_tables.sql;
-SOURCE sql/seed_criteria.sql;
-SOURCE sql/test_data.sql;
-exit
+CREATE USER 'softreview_dev_user'@'localhost' IDENTIFIED BY 'YOUR_LOCAL_PASSWORD';
+GRANT SELECT, INSERT ON softreview_dev.* TO 'softreview_dev_user'@'localhost';
 ```
 
-Copy `.env.example` to `.env` once. Edit `.env` with the local backend account and the port of your isolated instance. If MySQL CLI tools are outside `PATH`, use their full paths. Start the API with the local configuration.
+### Start the API
 
-```powershell
+Copy `.env.example` to `.env` and set the user, password, and port for your local MySQL. Git ignores `.env`. Install the locked Python dependencies once, then start Flask.
+
+```sh
+uv sync --locked --python 3.12
 uv run --locked --env-file .env flask --app app run --host 127.0.0.1 --port 5000
 ```
 
+Open `http://127.0.0.1:5000/api/criteria` to check the database connection. The catalog starts empty after this setup.
+
 ### Tests
 
-`uv run --locked python -m unittest discover -s tests -v` runs isolated tests and skips MySQL integration tests by default. With the fictitious fixture loaded, set `$env:SOFTREVIEW_TEST_MYSQL = '1'` in PowerShell and run `uv run --locked --env-file .env python -m unittest discover -s tests -v`. The integration suite requires the isolated `softreview_test` database. Use a local test account with SELECT, INSERT, DELETE, and TRIGGER privileges in that database. Use an isolated instance that permits the temporary rollback test trigger, for example with binary logging disabled.
+`uv run --locked python -m unittest discover -s tests -v` runs isolated tests and skips MySQL integration tests by default. For integration tests, use the same schema setup commands with a fresh `softreview_test` database, then load `sql/test_data.sql` into it. Copy `.env.example` to `.env.test` and set `DB_NAME=softreview_test` and the local test account. Set `$env:SOFTREVIEW_TEST_MYSQL = '1'` in PowerShell or `export SOFTREVIEW_TEST_MYSQL=1` in a POSIX shell, then run `uv run --locked --env-file .env.test python -m unittest discover -s tests -v`. The test account needs SELECT, INSERT, DELETE, and TRIGGER privileges. Use an isolated instance that permits the temporary rollback test trigger, for example with binary logging disabled.
 
 ## Project files
 

@@ -2,6 +2,11 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-24 · Local database setup for new clones
+
+- Added `sql/setup_local.sql` to load the existing schema and evaluation criteria. Updated `.env.example` and `README.md` to use `softreview_dev` for local development and a separate `softreview_test` schema for integration tests.
+- Verified the MySQL client setup on Windows against a fresh isolated database. Flask returned the four criteria and an empty catalog through a local account with SELECT and INSERT privileges. All 21 tests passed with the fictitious fixture in the separate test schema. The course dataset import is a later step.
+
 ## 2026-11-24 · Flask modules by feature
 
 - Reduced `app.py` to application setup and the health check. Grouped public routes in Flask blueprints in `api/catalog.py`, `api/criteria.py`, `api/evaluations.py`, and `api/rankings.py`. Moved shared JSON error handlers to `api/errors.py` and kept their registration at the application level.

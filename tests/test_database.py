@@ -10,6 +10,29 @@ class DatabaseTests(unittest.TestCase):
             with self.assertRaises(DatabaseUnavailable):
                 connect()
 
+    @patch("database.mysql.connector.connect")
+    def test_connection_uses_loopback_with_legacy_settings_present(self, connect_mock):
+        settings = {
+            "DB_NAME": "softreview_test",
+            "DB_USER": "local_user",
+            "DB_PASSWORD": "test_password",
+            "DB_PORT": "3307",
+            "DB_HOST": "remote.example.invalid",
+            "DB_UNIX_SOCKET": "/tmp/legacy.sock",
+        }
+        with patch.dict("os.environ", settings, clear=True):
+            self.assertIs(connect(), connect_mock.return_value)
+
+        connect_mock.assert_called_once_with(
+            host="127.0.0.1",
+            port=3307,
+            database="softreview_test",
+            user="local_user",
+            password="test_password",
+            autocommit=False,
+            connection_timeout=5,
+        )
+
     @patch("database.connect")
     def test_read_closes_cursor_and_connection(self, connect_mock):
         connection = connect_mock.return_value

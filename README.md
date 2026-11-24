@@ -1,60 +1,70 @@
 # SoftReview Hub
 
-SoftReview Hub is a Flask and MySQL API for browsing software data, submitting evaluations, and ranking systems by criterion. The backend uses Python 3.12 and runs locally with Flask or on Linux with Gunicorn.
+SoftReview Hub is a Flask and MySQL API for browsing software data, submitting evaluations, and ranking systems by criterion. The backend uses Python 3.12 and runs locally with Flask.
 
 ## Local development
 
-Install [uv](https://docs.astral.sh/uv/) and use it for Python dependencies and commands. A local MySQL 8 instance is required for database routes. Run the commands below from the root of the clone.
+Install [uv](https://docs.astral.sh/uv/) and have MySQL 8 running on your machine. Run the setup commands from the root of the clone. If the MySQL client is outside `PATH`, use its full path.
 
-Set `DB_NAME`, `DB_USER`, and `DB_PASSWORD` in the process environment for database routes. TCP defaults to `DB_HOST=127.0.0.1` and `DB_PORT=3306`. Set `DB_UNIX_SOCKET` to use a local Unix socket instead. Use `.env.example` as a reference when setting environment variables.
+The API connects to MySQL over TCP at `127.0.0.1`. Set `DB_NAME`, `DB_USER`, and `DB_PASSWORD` for database routes. The default port is `3306` and can be changed with `DB_PORT`.
+
+### Prepare the database once
+
+Use the account that can create a database on your local MySQL. Replace `3306` if your instance uses another port. Run the second command after the first succeeds.
+
+```sh
+mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u YOUR_LOCAL_SETUP_USER -p -e 'CREATE DATABASE softreview_dev CHARACTER SET utf8mb4'
+mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u YOUR_LOCAL_SETUP_USER -p -e 'SOURCE sql/setup_local.sql' softreview_dev
+```
+
+The setup creates the tables and loads the four evaluation criteria. If you need a separate app account, connect to your local MySQL with your setup account and run these statements with a local password of your choice.
+
+```sql
+CREATE USER 'softreview_dev_user'@'localhost' IDENTIFIED BY 'YOUR_LOCAL_PASSWORD';
+GRANT SELECT, INSERT ON softreview_dev.* TO 'softreview_dev_user'@'localhost';
+```
 
 ### Start the API
 
-```powershell
+Copy `.env.example` to `.env` and set the user, password, and port for your local MySQL. Git ignores `.env`. Install the locked Python dependencies once, then start Flask.
+
+```sh
 uv sync --locked --python 3.12
-uv run --locked flask --app app run --host 127.0.0.1 --port 5000
+uv run --locked --env-file .env flask --app app run --host 127.0.0.1 --port 5000
 ```
 
-### Set up local MySQL
+Open `http://127.0.0.1:5000/api/criteria` to check the database connection. The catalog starts empty after this setup.
 
-To test the database flows, create a fresh `softreview_test` database on an isolated local MySQL 8 instance. From the clone root, use the local schema setup account and port.
+### Try the API with fictitious data
 
-```powershell
-$setupUser = 'YOUR_LOCAL_SCHEMA_SETUP_USER'
-$mysqlPort = 3306
-mysql.exe --protocol=TCP -h 127.0.0.1 -P $mysqlPort -u $setupUser -p -e 'CREATE DATABASE softreview_test CHARACTER SET utf8mb4'
-mysql.exe --protocol=TCP -h 127.0.0.1 -P $mysqlPort -u $setupUser -p softreview_test
+To try the backend using only the files in this repository, load the included fixture into a fresh `softreview_dev` database after the schema setup. Use the same setup account and port as above.
+
+```sh
+mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u YOUR_LOCAL_SETUP_USER -p -e 'SOURCE sql/test_data.sql' softreview_dev
 ```
 
-In the MySQL prompt, load the scripts in this order.
+With Flask running, open `http://127.0.0.1:5000/api/software` to see four fictitious systems and `http://127.0.0.1:5000/api/rankings?criterion=price` to see their ranking. The course import requires a fresh database.
 
-```sql
-SOURCE sql/create_tables.sql;
-SOURCE sql/seed_criteria.sql;
-SOURCE sql/test_data.sql;
-exit
+### Import the course dataset
+
+Each teammate needs their own copy of `project.json`. Keep it outside the clone. After setting up a fresh `softreview_dev` database and filling in `.env`, run this from the clone root. Replace the example path with the location of your file.
+
+```sh
+uv run --locked --env-file .env python -m scripts.import_course_data ../project.json
 ```
 
-Set the backend account in PowerShell before starting Flask again. Adjust the port for the isolated instance. If MySQL CLI tools are outside `PATH`, use their full paths.
-
-```powershell
-$env:DB_HOST = '127.0.0.1'
-$env:DB_PORT = '3306'
-$env:DB_NAME = 'softreview_test'
-$env:DB_USER = 'YOUR_LOCAL_TEST_USER'
-$env:DB_PASSWORD = [Net.NetworkCredential]::new('', (Read-Host 'MySQL password' -AsSecureString)).Password
-$env:FLASK_DEBUG = '0'
-uv run --locked flask --app app run --host 127.0.0.1 --port 5000
-```
+The importer uses the local database in `.env`, skips profile records, and stores numeric evaluator IDs. It commits the import as a single transaction and stops if the target already has catalog or evaluator data. Open `http://127.0.0.1:5000/api/software` after starting Flask to check the catalog.
 
 ### Tests
 
-`uv run --locked python -m unittest discover -s tests -v` runs isolated tests and skips MySQL integration tests by default. With the fictitious fixture loaded, run the same command with `SOFTREVIEW_TEST_MYSQL=1` in the environment. In PowerShell, use `$env:SOFTREVIEW_TEST_MYSQL = '1'`. The integration suite requires the isolated `softreview_test` database. Use a local test account with SELECT, INSERT, DELETE, and TRIGGER privileges in that database. Use an isolated instance that permits the temporary rollback test trigger, for example with binary logging disabled.
+`uv run --locked python -m unittest discover -s tests -v` runs isolated tests and skips MySQL integration tests by default. For integration tests, use the same schema setup commands with a fresh `softreview_test` database, then load `sql/test_data.sql` into it. Copy `.env.example` to `.env.test` and set `DB_NAME=softreview_test` and the local test account. Set `$env:SOFTREVIEW_TEST_MYSQL = '1'` in PowerShell or `export SOFTREVIEW_TEST_MYSQL=1` in a POSIX shell, then run `uv run --locked --env-file .env.test python -m unittest discover -s tests -v`. The test account needs SELECT, INSERT, DELETE, and TRIGGER privileges. Use an isolated instance that permits the temporary rollback test trigger, for example with binary logging disabled.
 
 ## Project files
 
-- `app.py` defines the Flask routes and JSON responses.
+- `app.py` starts Flask, registers the route groups, and defines the health check.
+- `api/` groups routes by feature in `catalog.py`, `criteria.py`, `evaluations.py`, and `rankings.py`. `errors.py` handles JSON errors for the whole app.
 - `database.py` manages MySQL connections and transactions.
+- `scripts/` contains the command-line importer for the course dataset.
 - `sql/` contains the schema, criteria seed, and fictitious development data.
 - `tests/` contains the isolated and MySQL integration tests.
 - `pyproject.toml` and `uv.lock` define the reproducible Python environment.

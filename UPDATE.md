@@ -2,6 +2,32 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-24 · Public backend handoff
+
+- Documented how to run the backend from a clone with the tracked fictitious fixture. Added ignore rules for local MySQL data, SSH configuration, MySQL login files, and PKCS#12 key stores.
+- Verified a fresh Windows clone with an isolated MySQL instance and credentials created for that clone. HTTP checks covered health, the catalog, evaluation submission and stored scores, and the price ranking. All 21 tests passed. Representative private paths were ignored and `.env.example` remained tracked.
+
+## 2026-11-24 · Local course dataset import
+
+- Added `scripts/import_course_data.py` and `scripts/course_data.py` to import an external JSON Lines dataset into a fresh local MySQL database. The importer skips profiles, maps evaluator identifiers to numbers in memory, and commits the batch atomically. Updated `README.md` with the command for each teammate.
+- Verified the command with the course dataset and a restricted account on isolated Windows MySQL. Flask returned 100 software systems, a price ranking, and 18,952 scores from 4,738 evaluations. A forced write failure rolled back the entire import. Concurrent and repeated runs left a single copy, and malformed input produced only a line-number error. All 21 existing tests passed in the separate fixture database.
+
+## 2026-11-24 · Local database setup for new clones
+
+- Added `sql/setup_local.sql` to load the existing schema and evaluation criteria. Updated `.env.example` and `README.md` to use `softreview_dev` for local development and a separate `softreview_test` schema for integration tests.
+- Verified the MySQL client setup on Windows against a fresh isolated database. Flask returned the four criteria and an empty catalog through a local account with SELECT and INSERT privileges. All 21 tests passed with the fictitious fixture in the separate test schema. The course dataset import is a later step.
+
+## 2026-11-24 · Flask modules by feature
+
+- Reduced `app.py` to application setup and the health check. Grouped public routes in Flask blueprints in `api/catalog.py`, `api/criteria.py`, `api/evaluations.py`, and `api/rankings.py`. Moved shared JSON error handlers to `api/errors.py` and kept their registration at the application level.
+- Simplified validation in the criteria and evaluation modules, moved the shared integer limit to `database.py`, and removed Gunicorn from `pyproject.toml` and `uv.lock` for local Flask operation. Updated `README.md` and the mock targets in `tests/test_api.py`.
+- `uv sync --offline --locked --python 3.12` succeeded. All 21 tests passed against an isolated local MySQL instance with fictitious data, including ranking and transaction rollback checks. The Flask CLI listed the expected routes. The CLI entry point also passed health and JSON 404 checks.
+
+## 2026-11-24 · Local-only database connection
+
+- Fixed MySQL connections to `127.0.0.1` in `database.py` and retained `DB_PORT` for isolated local instances. Updated `.env.example`, `README.md`, and `SECURITY.md` for local operation.
+- Added a regression test in `tests/test_database.py` that verifies the loopback connection when legacy host and socket settings are present. All 12 isolated tests passed, and Flask returned HTTP 200 for `/health` over loopback. The nine MySQL integration tests were skipped because the local test account was not configured in this checkout.
+
 ## 2026-11-23 · Public repository documentation review
 
 - Limited the README to the project description, local setup, tests, and main files. Removed private integration and deployment details from the public documentation and kept verification outcomes here. Integration details are shared directly with the team.

@@ -2,6 +2,11 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-24 · Public backend handoff
+
+- Documented how to run the backend from a clone with the tracked fictitious fixture. Added ignore rules for local MySQL data, SSH configuration, MySQL login files, and PKCS#12 key stores.
+- Verified a fresh Windows clone with an isolated MySQL instance and credentials created for that clone. HTTP checks covered health, the catalog, evaluation submission and stored scores, and the price ranking. All 21 tests passed. Representative private paths were ignored and `.env.example` remained tracked.
+
 ## 2026-11-24 · Local course dataset import
 
 - Added `scripts/import_course_data.py` and `scripts/course_data.py` to import an external JSON Lines dataset into a fresh local MySQL database. The importer skips profiles, maps evaluator identifiers to numbers in memory, and commits the batch atomically. Updated `README.md` with the command for each teammate.

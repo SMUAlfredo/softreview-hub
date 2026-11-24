@@ -35,6 +35,16 @@ uv run --locked --env-file .env flask --app app run --host 127.0.0.1 --port 5000
 
 Open `http://127.0.0.1:5000/api/criteria` to check the database connection. The catalog starts empty after this setup.
 
+### Try the API with fictitious data
+
+To try the backend using only the files in this repository, load the included fixture into a fresh `softreview_dev` database after the schema setup. Use the same setup account and port as above.
+
+```sh
+mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u YOUR_LOCAL_SETUP_USER -p -e 'SOURCE sql/test_data.sql' softreview_dev
+```
+
+With Flask running, open `http://127.0.0.1:5000/api/software` to see four fictitious systems and `http://127.0.0.1:5000/api/rankings?criterion=price` to see their ranking. The course import requires a fresh database.
+
 ### Import the course dataset
 
 Each teammate needs their own copy of `project.json`. Keep it outside the clone. After setting up a fresh `softreview_dev` database and filling in `.env`, run this from the clone root. Replace the example path with the location of your file.

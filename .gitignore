@@ -8,15 +8,20 @@ __pycache__/
 .env
 .env.*
 !.env.example
+.mylogin.cnf
+.ssh/
 *.key
 *.pem
 *.ppk
+*.p12
+*.pfx
 id_rsa
 id_ed25519
 id_ecdsa
 id_dsa
 
 # Course data and dumps
+.softreview-mysql/
 project.json
 project(*).json
 clean_project.json

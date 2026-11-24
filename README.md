@@ -1,12 +1,12 @@
 # SoftReview Hub
 
-SoftReview Hub is a Flask and MySQL API for browsing software data, submitting evaluations, and ranking systems by criterion. The backend uses Python 3.12 and runs locally with Flask or on Linux with Gunicorn.
+SoftReview Hub is a Flask and MySQL API for browsing software data, submitting evaluations, and ranking systems by criterion. The backend uses Python 3.12 and runs locally with Flask.
 
 ## Local development
 
 Install [uv](https://docs.astral.sh/uv/) and use it for Python dependencies and commands. A local MySQL 8 instance is required for database routes. Run the commands below from the root of the clone.
 
-Set `DB_NAME`, `DB_USER`, and `DB_PASSWORD` in the process environment for database routes. TCP defaults to `DB_HOST=127.0.0.1` and `DB_PORT=3306`. Set `DB_UNIX_SOCKET` to use a local Unix socket instead. Use `.env.example` as a reference when setting environment variables.
+The API connects to MySQL over TCP at `127.0.0.1`. Set `DB_NAME`, `DB_USER`, and `DB_PASSWORD` for database routes. The default port is `3306` and can be changed with `DB_PORT`.
 
 ### Start the API
 
@@ -35,21 +35,15 @@ SOURCE sql/test_data.sql;
 exit
 ```
 
-Set the backend account in PowerShell before starting Flask again. Adjust the port for the isolated instance. If MySQL CLI tools are outside `PATH`, use their full paths.
+Copy `.env.example` to `.env` once. Edit `.env` with the local backend account and the port of your isolated instance. If MySQL CLI tools are outside `PATH`, use their full paths. Start the API with the local configuration.
 
 ```powershell
-$env:DB_HOST = '127.0.0.1'
-$env:DB_PORT = '3306'
-$env:DB_NAME = 'softreview_test'
-$env:DB_USER = 'YOUR_LOCAL_TEST_USER'
-$env:DB_PASSWORD = [Net.NetworkCredential]::new('', (Read-Host 'MySQL password' -AsSecureString)).Password
-$env:FLASK_DEBUG = '0'
-uv run --locked flask --app app run --host 127.0.0.1 --port 5000
+uv run --locked --env-file .env flask --app app run --host 127.0.0.1 --port 5000
 ```
 
 ### Tests
 
-`uv run --locked python -m unittest discover -s tests -v` runs isolated tests and skips MySQL integration tests by default. With the fictitious fixture loaded, run the same command with `SOFTREVIEW_TEST_MYSQL=1` in the environment. In PowerShell, use `$env:SOFTREVIEW_TEST_MYSQL = '1'`. The integration suite requires the isolated `softreview_test` database. Use a local test account with SELECT, INSERT, DELETE, and TRIGGER privileges in that database. Use an isolated instance that permits the temporary rollback test trigger, for example with binary logging disabled.
+`uv run --locked python -m unittest discover -s tests -v` runs isolated tests and skips MySQL integration tests by default. With the fictitious fixture loaded, set `$env:SOFTREVIEW_TEST_MYSQL = '1'` in PowerShell and run `uv run --locked --env-file .env python -m unittest discover -s tests -v`. The integration suite requires the isolated `softreview_test` database. Use a local test account with SELECT, INSERT, DELETE, and TRIGGER privileges in that database. Use an isolated instance that permits the temporary rollback test trigger, for example with binary logging disabled.
 
 ## Project files
 

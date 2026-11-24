@@ -2,6 +2,11 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-24 · Local-only database connection
+
+- Fixed MySQL connections to `127.0.0.1` in `database.py` and retained `DB_PORT` for isolated local instances. Updated `.env.example`, `README.md`, and `SECURITY.md` for local operation.
+- Added a regression test in `tests/test_database.py` that verifies the loopback connection when legacy host and socket settings are present. All 12 isolated tests passed, and Flask returned HTTP 200 for `/health` over loopback. The nine MySQL integration tests were skipped because the local test account was not configured in this checkout.
+
 ## 2026-11-23 · Public repository documentation review
 
 - Limited the README to the project description, local setup, tests, and main files. Removed private integration and deployment details from the public documentation and kept verification outcomes here. Integration details are shared directly with the team.

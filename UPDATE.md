@@ -2,6 +2,11 @@
 
 The latest entries appear first. Always use uv for Python. Add dependencies with `uv add`, reproduce the environment with `uv sync --locked`, and run Flask, scripts, and tests with `uv run`. Track `pyproject.toml` and `uv.lock` in Git. Avoid `pip`, `python -m pip`, and `uv pip` for dependency management.
 
+## 2026-11-24 · Local course dataset import
+
+- Added `scripts/import_course_data.py` and `scripts/course_data.py` to import an external JSON Lines dataset into a fresh local MySQL database. The importer skips profiles, maps evaluator identifiers to numbers in memory, and commits the batch atomically. Updated `README.md` with the command for each teammate.
+- Verified the command with the course dataset and a restricted account on isolated Windows MySQL. Flask returned 100 software systems, a price ranking, and 18,952 scores from 4,738 evaluations. A forced write failure rolled back the entire import. Concurrent and repeated runs left a single copy, and malformed input produced only a line-number error. All 21 existing tests passed in the separate fixture database.
+
 ## 2026-11-24 · Local database setup for new clones
 
 - Added `sql/setup_local.sql` to load the existing schema and evaluation criteria. Updated `.env.example` and `README.md` to use `softreview_dev` for local development and a separate `softreview_test` schema for integration tests.

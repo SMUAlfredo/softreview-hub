@@ -35,6 +35,16 @@ uv run --locked --env-file .env flask --app app run --host 127.0.0.1 --port 5000
 
 Open `http://127.0.0.1:5000/api/criteria` to check the database connection. The catalog starts empty after this setup.
 
+### Import the course dataset
+
+Each teammate needs their own copy of `project.json`. Keep it outside the clone. After setting up a fresh `softreview_dev` database and filling in `.env`, run this from the clone root. Replace the example path with the location of your file.
+
+```sh
+uv run --locked --env-file .env python -m scripts.import_course_data ../project.json
+```
+
+The importer uses the local database in `.env`, skips profile records, and stores numeric evaluator IDs. It commits the import as a single transaction and stops if the target already has catalog or evaluator data. Open `http://127.0.0.1:5000/api/software` after starting Flask to check the catalog.
+
 ### Tests
 
 `uv run --locked python -m unittest discover -s tests -v` runs isolated tests and skips MySQL integration tests by default. For integration tests, use the same schema setup commands with a fresh `softreview_test` database, then load `sql/test_data.sql` into it. Copy `.env.example` to `.env.test` and set `DB_NAME=softreview_test` and the local test account. Set `$env:SOFTREVIEW_TEST_MYSQL = '1'` in PowerShell or `export SOFTREVIEW_TEST_MYSQL=1` in a POSIX shell, then run `uv run --locked --env-file .env.test python -m unittest discover -s tests -v`. The test account needs SELECT, INSERT, DELETE, and TRIGGER privileges. Use an isolated instance that permits the temporary rollback test trigger, for example with binary logging disabled.
@@ -44,6 +54,7 @@ Open `http://127.0.0.1:5000/api/criteria` to check the database connection. The 
 - `app.py` starts Flask, registers the route groups, and defines the health check.
 - `api/` groups routes by feature in `catalog.py`, `criteria.py`, `evaluations.py`, and `rankings.py`. `errors.py` handles JSON errors for the whole app.
 - `database.py` manages MySQL connections and transactions.
+- `scripts/` contains the command-line importer for the course dataset.
 - `sql/` contains the schema, criteria seed, and fictitious development data.
 - `tests/` contains the isolated and MySQL integration tests.
 - `pyproject.toml` and `uv.lock` define the reproducible Python environment.
